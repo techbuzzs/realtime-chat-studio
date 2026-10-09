@@ -1,2 +1,312 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="A realtime chat UI demonstration by Tech Buzzs."><title>Relay — Realtime Chat Studio</title><style>:root{--bg:#eef2f7;--panel:#fff;--ink:#182033;--muted:#6f7a90;--blue:#5268ff;--mint:#31d0aa;--line:#dfe5ef;--bubble:#edf0ff}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#f8faff,#e9eef7);color:var(--ink);font:15px/1.45 Inter,system-ui}.app{height:100vh;display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1260px;margin:auto;background:var(--panel);box-shadow:0 20px 80px #42506a20}.side{background:#151a2d;color:#f7f8ff;padding:24px}.brand{font-size:1.25rem;font-weight:900;letter-spacing:-.05em}.brand i{color:#6ff1d2;font-style:normal}.profile{display:flex;gap:10px;align-items:center;margin:38px 0 28px}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#6ff1d2,#6577ff);color:#11162a;font-weight:850}.side small{color:#929bb4}.channels{display:grid;gap:7px}.channels button{border:0;background:transparent;color:#aeb6cb;text-align:left;padding:10px;border-radius:8px}.channels button.active{background:#292f49;color:#fff}.main{display:grid;grid-template-rows:auto 1fr auto;min-width:0}.top{padding:20px 25px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.top h1{font-size:1.1rem;margin:0}.status{color:#169c79;font-size:.82rem}.messages{padding:25px;overflow:auto;background:radial-gradient(circle at 90% 4%,#cfd6ff66,transparent 28%),#f8faff}.message{display:flex;gap:10px;margin:18px 0;max-width:72%;animation:arrive .3s ease}.message.mine{margin-left:auto;flex-direction:row-reverse}.bubble{background:#fff;border:1px solid var(--line);border-radius:5px 16px 16px 16px;padding:11px 14px;box-shadow:0 4px 16px #26314c0d}.mine .bubble{background:var(--blue);color:#fff;border-color:var(--blue);border-radius:16px 5px 16px 16px}.bubble small{display:block;opacity:.62;margin-top:4px}.typing{color:var(--muted);font-size:.84rem;height:22px}.compose{padding:15px 20px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px}.compose input{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font:inherit;outline:none}.compose input:focus{border-color:var(--blue)}.compose button{border:0;border-radius:10px;background:var(--blue);color:#fff;padding:0 18px;font-weight:800;cursor:pointer}.transport{position:fixed;right:18px;top:18px;background:#151a2d;color:#fff;border-radius:99px;padding:7px 11px;font-size:.76rem;box-shadow:0 8px 25px #11152a35}.transport b{color:#6ff1d2}@keyframes arrive{from{opacity:0;transform:translateY(9px)}}@media(max-width:680px){.app{grid-template-columns:1fr}.side{display:none}.transport{top:auto;bottom:75px}.message{max-width:88%}}</style></head><body><main class="app"><aside class="side"><div class="brand">RELAY<i>•</i></div><div class="profile"><div class="avatar">TB</div><div><b>Tech Buzzs</b><br><small>Available</small></div></div><small>CHANNELS</small><div class="channels"><button class="active"># product-room</button><button># engineering</button><button># launches</button></div></aside><section class="main"><header class="top"><div><h1># product-room</h1><small style="color:var(--muted)">Realtime interface prototype</small></div><span class="status">● Connected</span></header><div class="messages" id="messages"><div class="message"><div class="avatar">AM</div><div class="bubble">The architecture review is ready. Want the short version?<small>Avery · 10:24</small></div></div><div class="message mine"><div class="avatar">TB</div><div class="bubble">Yes—lead with the trade-off, then the recommendation.<small>You · 10:25</small></div></div><div class="typing" id="typing"></div></div><form class="compose" id="form"><input id="input" autocomplete="off" placeholder="Message the product room"><button>Send</button></form></section></main><div class="transport"><b>LIVE</b> · BroadcastChannel · Socket.IO-ready</div><script>const room=new BroadcastChannel('techbuzzs-relay-demo'),messages=document.querySelector('#messages'),input=document.querySelector('#input'),typing=document.querySelector('#typing'),form=document.querySelector('#form');const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});function add(text,mine=false,name='Avery'){const el=document.createElement('div');el.className='message'+(mine?' mine':'');el.innerHTML=`<div class="avatar">${mine?'TB':'AM'}</div><div class="bubble"></div>`;el.querySelector('.bubble').textContent=text;el.querySelector('.bubble').insertAdjacentHTML('beforeend',`<small>${mine?'You':name} · ${now()}</small>`);messages.insertBefore(el,typing);messages.scrollTop=messages.scrollHeight}room.onmessage=e=>add(e.data.text,false,e.data.name||'Guest');form.onsubmit=e=>{e.preventDefault();let text=input.value.trim();if(!text)return;add(text,true);room.postMessage({text,name:'Guest'});input.value='';typing.textContent='Relay assistant is typing…';setTimeout(()=>{typing.textContent='';add('Message received. Open this demo in another tab to test true cross-tab delivery.',false,'Relay')},700)};</script></body></html>
-
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="A realtime chat UI demonstration by Tech Buzzs."
+    />
+    <title>Relay — Realtime Chat Studio</title>
+    <style>
+      :root {
+        --bg: #eef2f7;
+        --panel: #fff;
+        --ink: #182033;
+        --muted: #6f7a90;
+        --blue: #5268ff;
+        --mint: #31d0aa;
+        --line: #dfe5ef;
+        --bubble: #edf0ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(145deg, #f8faff, #e9eef7);
+        color: var(--ink);
+        font:
+          15px/1.45 Inter,
+          system-ui;
+      }
+      .app {
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        max-width: 1260px;
+        margin: auto;
+        background: var(--panel);
+        box-shadow: 0 20px 80px #42506a20;
+      }
+      .side {
+        background: #151a2d;
+        color: #f7f8ff;
+        padding: 24px;
+      }
+      .brand {
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+      }
+      .brand i {
+        color: #6ff1d2;
+        font-style: normal;
+      }
+      .profile {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin: 38px 0 28px;
+      }
+      .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #6ff1d2, #6577ff);
+        color: #11162a;
+        font-weight: 850;
+      }
+      .side small {
+        color: #929bb4;
+      }
+      .channels {
+        display: grid;
+        gap: 7px;
+      }
+      .channels button {
+        border: 0;
+        background: transparent;
+        color: #aeb6cb;
+        text-align: left;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      .channels button.active {
+        background: #292f49;
+        color: #fff;
+      }
+      .main {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-width: 0;
+      }
+      .top {
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .top h1 {
+        font-size: 1.1rem;
+        margin: 0;
+      }
+      .status {
+        color: #169c79;
+        font-size: 0.82rem;
+      }
+      .messages {
+        padding: 25px;
+        overflow: auto;
+        background:
+          radial-gradient(circle at 90% 4%, #cfd6ff66, transparent 28%), #f8faff;
+      }
+      .message {
+        display: flex;
+        gap: 10px;
+        margin: 18px 0;
+        max-width: 72%;
+        animation: arrive 0.3s ease;
+      }
+      .message.mine {
+        margin-left: auto;
+        flex-direction: row-reverse;
+      }
+      .bubble {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 5px 16px 16px 16px;
+        padding: 11px 14px;
+        box-shadow: 0 4px 16px #26314c0d;
+      }
+      .mine .bubble {
+        background: var(--blue);
+        color: #fff;
+        border-color: var(--blue);
+        border-radius: 16px 5px 16px 16px;
+      }
+      .bubble small {
+        display: block;
+        opacity: 0.62;
+        margin-top: 4px;
+      }
+      .typing {
+        color: var(--muted);
+        font-size: 0.84rem;
+        height: 22px;
+      }
+      .compose {
+        padding: 15px 20px;
+        border-top: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+      .compose input {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font: inherit;
+        outline: none;
+      }
+      .compose input:focus {
+        border-color: var(--blue);
+      }
+      .compose button {
+        border: 0;
+        border-radius: 10px;
+        background: var(--blue);
+        color: #fff;
+        padding: 0 18px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .transport {
+        position: fixed;
+        right: 18px;
+        top: 18px;
+        background: #151a2d;
+        color: #fff;
+        border-radius: 99px;
+        padding: 7px 11px;
+        font-size: 0.76rem;
+        box-shadow: 0 8px 25px #11152a35;
+      }
+      .transport b {
+        color: #6ff1d2;
+      }
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(9px);
+        }
+      }
+      @media (max-width: 680px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          display: none;
+        }
+        .transport {
+          top: auto;
+          bottom: 75px;
+        }
+        .message {
+          max-width: 88%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <aside class="side">
+        <div class="brand">RELAY<i>•</i></div>
+        <div class="profile">
+          <div class="avatar">TB</div>
+          <div><b>Tech Buzzs</b><br /><small>Available</small></div>
+        </div>
+        <small>CHANNELS</small>
+        <div class="channels">
+          <button class="active"># product-room</button
+          ><button># engineering</button><button># launches</button>
+        </div>
+      </aside>
+      <section class="main">
+        <header class="top">
+          <div>
+            <h1># product-room</h1>
+            <small style="color: var(--muted)"
+              >Realtime interface prototype</small
+            >
+          </div>
+          <span class="status">● Connected</span>
+        </header>
+        <div class="messages" id="messages">
+          <div class="message">
+            <div class="avatar">AM</div>
+            <div class="bubble">
+              The architecture review is ready. Want the short version?<small
+                >Aarav · 10:24</small
+              >
+            </div>
+          </div>
+          <div class="message mine">
+            <div class="avatar">TB</div>
+            <div class="bubble">
+              Yes—lead with the trade-off, then the recommendation.<small
+                >You · 10:25</small
+              >
+            </div>
+          </div>
+          <div class="typing" id="typing"></div>
+        </div>
+        <form class="compose" id="form">
+          <input
+            id="input"
+            autocomplete="off"
+            placeholder="Message the product room"
+          /><button>Send</button>
+        </form>
+      </section>
+    </main>
+    <div class="transport">
+      <b>LIVE</b> · BroadcastChannel · Socket.IO-ready
+    </div>
+    <script>
+      const room = new BroadcastChannel("techbuzzs-relay-demo"),
+        messages = document.querySelector("#messages"),
+        input = document.querySelector("#input"),
+        typing = document.querySelector("#typing"),
+        form = document.querySelector("#form");
+      const now = () =>
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      function add(text, mine = false, name = "Aarav") {
+        const el = document.createElement("div");
+        el.className = "message" + (mine ? " mine" : "");
+        el.innerHTML = `<div class="avatar">${mine ? "TB" : "AM"}</div><div class="bubble"></div>`;
+        el.querySelector(".bubble").textContent = text;
+        el.querySelector(".bubble").insertAdjacentHTML(
+          "beforeend",
+          `<small>${mine ? "You" : name} · ${now()}</small>`,
+        );
+        messages.insertBefore(el, typing);
+        messages.scrollTop = messages.scrollHeight;
+      }
+      room.onmessage = (e) => add(e.data.text, false, e.data.name || "Guest");
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        let text = input.value.trim();
+        if (!text) return;
+        add(text, true);
+        room.postMessage({ text, name: "Guest" });
+        input.value = "";
+        typing.textContent = "Relay assistant is typing…";
+        setTimeout(() => {
+          typing.textContent = "";
+          add(
+            "Message received. Open this demo in another tab to test true cross-tab delivery.",
+            false,
+            "Relay",
+          );
+        }, 700);
+      };
+    </script>
+  </body>
+</html>
